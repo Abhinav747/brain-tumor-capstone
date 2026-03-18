@@ -1,0 +1,6 @@
+brain_env/
+__pycache__/
+*.pyc
+dataset2/
+dataset_processed/
+results/
