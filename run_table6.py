@@ -1,36 +1,55 @@
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-import os
+import pandas as pd
+from dataset_loader import load_dataset
+from models import DenseNet_model, Inception_model, ResNet_model
+from tensorflow.keras import backend as K
+import gc
 
-def load_dataset(base_path, interpolation):
+interpolations = ["nearest","bilinear","bicubic","lanczos"]
 
-    train_dir = os.path.join(base_path, interpolation, "train")
-    val_dir   = os.path.join(base_path, interpolation, "val")
-    test_dir  = os.path.join(base_path, interpolation, "test")
+results = []
 
-    train_gen = ImageDataGenerator(rescale=1./255)
-    val_gen   = ImageDataGenerator(rescale=1./255)
-    test_gen  = ImageDataGenerator(rescale=1./255)
+models = {
+    "InceptionV3": Inception_model,
+    "ResNet50V2": ResNet_model,
+    "DenseNet201": DenseNet_model
+}
 
-    train_data = train_gen.flow_from_directory(
-        train_dir,
-        target_size=(299,299),
-        batch_size=8,
-        class_mode='binary'
-    )
+for interp in interpolations:
 
-    val_data = val_gen.flow_from_directory(
-        val_dir,
-        target_size=(299,299),
-        batch_size=8,
-        class_mode='binary'
-    )
+    print(f"\nRunning interpolation: {interp}")
 
-    test_data = test_gen.flow_from_directory(
-        test_dir,
-        target_size=(299,299),
-        batch_size=8,
-        class_mode='binary',
-        shuffle=False
-    )
+    train_data, val_data, test_data = load_dataset("dataset_processed", interp)
 
-    return train_data, val_data, test_data
+    for name, model_fn in models.items():
+
+        print(f"Training {name}")
+
+        K.clear_session()
+        gc.collect()
+
+        model = model_fn()
+
+        model.fit(
+            train_data,
+            validation_data=val_data,
+            epochs=2,
+            verbose=1
+        )
+
+        loss, acc = model.evaluate(test_data)
+
+        results.append({
+            "Interpolation": interp,
+            "Model": name,
+            "Accuracy": round(acc,4)
+        })
+
+        del model
+        gc.collect()
+
+df = pd.DataFrame(results)
+
+print("\nFinal Table 6 Results:\n")
+print(df)
+
+df.to_csv("results/table6_results.csv", index=False)

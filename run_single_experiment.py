@@ -6,18 +6,14 @@ from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras import backend as K
 import gc
 
-# -------------------------------
-# INPUT ARGUMENTS
-# -------------------------------
+
 # Example:
 # python run_single_experiment.py lanczos DenseNet201
 
 interp = sys.argv[1]
 model_name = sys.argv[2]
 
-# -------------------------------
-# MODEL SELECTION
-# -------------------------------
+
 models = {
     "InceptionV3": Inception_model,
     "ResNet50V2": ResNet_model,
@@ -26,37 +22,27 @@ models = {
 
 print(f"\nRunning: {interp} + {model_name}")
 
-# -------------------------------
-# LOAD DATA
-# -------------------------------
+
 train_data, val_data, test_data = load_dataset("dataset_processed", interp)
 
 train_data.reset()
 val_data.reset()
 
-# -------------------------------
-# CLEAR MEMORY
-# -------------------------------
+
 K.clear_session()
 gc.collect()
 
-# -------------------------------
-# BUILD MODEL
-# -------------------------------
+
 model = models[model_name]()
 
-# -------------------------------
-# EARLY STOPPING
-# -------------------------------
+
 early_stop = EarlyStopping(
     monitor='val_loss',
     patience=5,
     restore_best_weights=True
 )
 
-# -------------------------------
-# TRAIN
-# -------------------------------
+
 model.fit(
     train_data,
     validation_data=val_data,
@@ -65,9 +51,7 @@ model.fit(
     verbose=1
 )
 
-# -------------------------------
-# EVALUATE
-# -------------------------------
+
 loss, acc = model.evaluate(
     test_data,
     steps=test_data.samples // test_data.batch_size
@@ -75,9 +59,7 @@ loss, acc = model.evaluate(
 
 print(f"\nFinal Accuracy: {acc:.4f}")
 
-# -------------------------------
-# SAVE RESULT
-# -------------------------------
+
 df = pd.DataFrame([{
     "Interpolation": interp,
     "Model": model_name,
@@ -97,8 +79,6 @@ df.to_csv(file_path, index=False)
 print("\nResult saved ")
 
 
-# -------------------------------
-# CLEANUP
-# -------------------------------
+
 del model
 gc.collect()
