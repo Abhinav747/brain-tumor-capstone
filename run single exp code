@@ -1,0 +1,15 @@
+python run_single_experiment.py nearest InceptionV3
+python run_single_experiment.py nearest ResNet50V2
+python run_single_experiment.py nearest DenseNet201
+
+python run_single_experiment.py bilinear InceptionV3
+python run_single_experiment.py bilinear ResNet50V2
+python run_single_experiment.py bilinear DenseNet201
+
+python run_single_experiment.py bicubic InceptionV3
+python run_single_experiment.py bicubic ResNet50V2
+python run_single_experiment.py bicubic DenseNet201
+
+python run_single_experiment.py lanczos InceptionV3
+python run_single_experiment.py lanczos ResNet50V2
+python run_single_experiment.py lanczos DenseNet201
